@@ -2,6 +2,7 @@ package com.spaghettierol.demo2.controller;
 
 import com.spaghettierol.demo2.dto.ConvenerDto;
 import com.spaghettierol.demo2.dto.request.CreateConvenerRequest;
+import com.spaghettierol.demo2.dto.request.UpdateConvenerDto;
 import com.spaghettierol.demo2.dto.response.GetModuleResponse;
 import com.spaghettierol.demo2.service.ConvenerService;
 import jakarta.validation.Valid;
@@ -41,7 +42,7 @@ public class ConvenerRestController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ConvenerDto> updateConvener(@PathVariable Long id,@RequestBody ConvenerDto convenerDto){
+    public ResponseEntity<ConvenerDto> updateConvener(@PathVariable Long id,@Valid @RequestBody UpdateConvenerDto convenerDto){
         return ResponseEntity.ok(convenerService.updateConvener(id,convenerDto));
     }
     @DeleteMapping("/delete/{id}")

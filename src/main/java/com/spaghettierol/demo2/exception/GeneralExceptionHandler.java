@@ -28,8 +28,8 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errors,HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ConvenerNotFoundException.class)
-    public ResponseEntity<?> convenerNotFoundException(ConvenerNotFoundException convenerNotFoundException){
+    @ExceptionHandler(ConvenerException.class)
+    public ResponseEntity<?> convenerNotFoundException(ConvenerException convenerNotFoundException){
         return new ResponseEntity<>(convenerNotFoundException.getLocalizedMessage(), HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(ModuleException.class)

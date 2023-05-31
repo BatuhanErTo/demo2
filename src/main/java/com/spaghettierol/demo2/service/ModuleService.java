@@ -35,10 +35,13 @@ public class ModuleService {
             throw new ModuleException("Module does not exist!");
         }
     }
-    protected void addConvenerToModule(Module module, Convener convener){
-        module.setConveners(Set.of(convener).stream().collect(Collectors.toSet()));
-        moduleRepository.save(module);
+    protected void addConvenerToModule(Module module, Convener convener) {
+        if (!module.getConveners().contains(convener)) {
+            module.getConveners().add(convener);
+            moduleRepository.save(module);
+        }
     }
+
     public List<ModuleDto> getAll() {
         return moduleRepository.findAll()
                 .stream()

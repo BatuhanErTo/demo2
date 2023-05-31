@@ -4,8 +4,9 @@ import com.spaghettierol.demo2.dto.ConvenerDto;
 import com.spaghettierol.demo2.dto.converter.ConvenerDtoConverter;
 import com.spaghettierol.demo2.dto.converter.ModuleDtoConverter;
 import com.spaghettierol.demo2.dto.request.CreateConvenerRequest;
+import com.spaghettierol.demo2.dto.request.UpdateConvenerDto;
 import com.spaghettierol.demo2.dto.response.GetModuleResponse;
-import com.spaghettierol.demo2.exception.ConvenerNotFoundException;
+import com.spaghettierol.demo2.exception.ConvenerException;
 import com.spaghettierol.demo2.model.Convener;
 import com.spaghettierol.demo2.model.Module;
 import com.spaghettierol.demo2.repository.ConvenerRepository;
@@ -48,18 +49,20 @@ public class ConvenerService {
     public ConvenerDto addModuleToConvener(Long convenerId, String code) {
         Module module = moduleService.findModuleByCode(code);
         Convener convener = findByConvenerId(convenerId);
-        convener.setModules(Set.of(module).stream().collect(Collectors.toSet()));
+        checkIfConvenerAlreadyContainsModule(convener,module);
+
+        convener.getModules().add(module);
         convenerRepository.save(convener);
-        moduleService.addConvenerToModule(module,convener);
+        moduleService.addConvenerToModule(module, convener);
+
         return convenerDtoConverter.convertToConvenerDto(convener);
     }
-
     public ConvenerDto getConvenerByConvenerId(Long id) {
         Convener convener = findByConvenerId(id);
         return convenerDtoConverter.convertToConvenerDto(convener);
     }
 
-    public ConvenerDto updateConvener(Long id, ConvenerDto convenerDto) {
+    public ConvenerDto updateConvener(Long id, UpdateConvenerDto convenerDto) {
         Convener convener = findByConvenerId(id);
         convener.setName(convenerDto.getName());
         convener.setPosition(convenerDto.getPositionType());
@@ -74,12 +77,17 @@ public class ConvenerService {
     public ConvenerDto deleteConvener(Long id) {
         Convener convener = findByConvenerId(id);
         Set<Module> modules = moduleService.findModulesOfOneConvener(convener.getModules());
+        convener.getModules().forEach(module -> module.getConveners().remove(convener));
         moduleService.deleteModulesOfSet(modules);
         convenerRepository.delete(convener);
-        return null;
+        return convenerDtoConverter.convertToConvenerDto(convener);
     }
     protected Convener findByConvenerId(Long id){
         return convenerRepository.findById(id)
-                .orElseThrow(() -> new ConvenerNotFoundException("Convener info does not exist!"));
+                .orElseThrow(() -> new ConvenerException("Convener info does not exist!"));
+    }
+    private void checkIfConvenerAlreadyContainsModule(Convener convener,Module module){
+        if(convener.getModules().contains(module))
+            throw new ConvenerException("Convener already teach this module");
     }
 }
