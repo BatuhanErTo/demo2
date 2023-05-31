@@ -79,8 +79,9 @@ public class ModuleService {
 
     public ModuleDto deleteModule(Long id) {
         Module module = findModuleById(id);
+        module.getConveners().forEach(convener -> convener.getModules().remove(module));
         moduleRepository.delete(module);
-        return null;
+        return moduleDtoConverter.convertToModuleDto(module);
     }
     protected Module findModuleByCode(String code){
         Module module = moduleRepository.findModuleByCode(code);

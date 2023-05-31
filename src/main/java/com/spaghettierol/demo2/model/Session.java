@@ -17,7 +17,7 @@ public class Session {
     private String topic;
     private Timestamp datetime;
     private int duration;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Module module;
 }
 

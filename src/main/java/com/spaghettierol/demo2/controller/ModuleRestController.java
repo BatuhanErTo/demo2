@@ -52,7 +52,7 @@ public class ModuleRestController {
         return ResponseEntity.ok(sessionService.getSessionsByModuleCode(code));
     }
 
-    @PostMapping("/{code}/sessions ")
+    @PostMapping("/{code}/sessions")
     public ResponseEntity<SessionDto> createSessionWithModuleCode(@PathVariable String code, @RequestBody CreateSessionRequest createSessionRequest){
         return ResponseEntity.ok(sessionService.createSessionWithModuleCode(code,createSessionRequest));
     }
@@ -68,7 +68,7 @@ public class ModuleRestController {
     }
 
     @PutMapping("/update/{code}/session/{id}")
-    private ResponseEntity<SessionDto> updateSession(@PathVariable String code, @PathVariable Long id, @RequestBody SessionDto sessionDto){
+    private ResponseEntity<SessionDto> updateSession(@PathVariable String code, @PathVariable Long id, @RequestBody UpdateSessionDto sessionDto){
         return ResponseEntity.ok(sessionService.updateSession(code,id,sessionDto));
     }
 

@@ -3,6 +3,7 @@ package com.spaghettierol.demo2.service;
 import com.spaghettierol.demo2.dto.SessionDto;
 import com.spaghettierol.demo2.dto.converter.SessionDtoConverter;
 import com.spaghettierol.demo2.dto.request.CreateSessionRequest;
+import com.spaghettierol.demo2.dto.request.UpdateSessionDto;
 import com.spaghettierol.demo2.dto.response.GetSessionResponse;
 import com.spaghettierol.demo2.exception.SessionException;
 import com.spaghettierol.demo2.model.Convener;
@@ -39,15 +40,13 @@ public class SessionService {
     public SessionDto createSessionWithModuleCode(String code, CreateSessionRequest createSessionRequest) {
         Module module = moduleService.findModuleByCode(code);
         Session session = saveSession(createSessionRequest);
-        module.setSessions(new HashSet<>(Set.of(session)));
+        session.setModule(module);
+        module.getSessions().add(session);
         moduleService.saveModule(module);
         return sessionDtoConverter.convertToSessionDto(session);
     }
     public SessionDto getSessionByModuleCode(String code, Long id) {
         Module module = moduleService.findModuleByCode(code);
-        if(!isSessionExistById(id)){
-            throw new SessionException("Session does not exist!");
-        }
         Session session = findSessionOfSpecificId(module.getSessions(),id);
         return sessionDtoConverter.convertToSessionDto(session);
     }
@@ -64,22 +63,29 @@ public class SessionService {
         sessionRepository.save(session);
         return sessionDtoConverter.convertToSessionDto(session);
     }
-    public SessionDto updateSession(String code, Long id, SessionDto sessionDto) {
+    public SessionDto updateSession(String code, Long id, UpdateSessionDto sessionDto) {
         Module module = moduleService.findModuleByCode(code);
-        Session session = findSessionOfSpecificId(module.getSessions(),id);
+        Session session = findSessionOfSpecificId(module.getSessions(), id);
         session.setTopic(sessionDto.getTopic());
         session.setDatetime(sessionDto.getDatetime());
-        session.setDuration(session.getDuration());
-        //session.setModule(module);
+        session.setDuration(sessionDto.getDuration());
+        module.setCode(sessionDto.getModuleDto().getCode());
+        module.setTitle(sessionDto.getModuleDto().getTitle());
+        module.setLevel(sessionDto.getModuleDto().getLevel());
+        module.setOptional(sessionDto.getModuleDto().isOptional());
+        session.setModule(module);
         sessionRepository.save(session);
+        moduleService.saveModule(module);
         return sessionDtoConverter.convertToSessionDto(session);
     }
+
 
     public SessionDto deleteSession(String code, Long id) {
         Module module = moduleService.findModuleByCode(code);
         Session session = findSessionOfSpecificId(module.getSessions(),id);
+        module.getSessions().remove(session);
         sessionRepository.delete(session);
-        return null;
+        return sessionDtoConverter.convertToSessionDto(session);
     }
     public List<SessionDto> deleteAllSession() {
         sessionRepository.deleteAll();
@@ -120,8 +126,10 @@ public class SessionService {
         return sessionRepository.findSessionByModule_Code(code);
     }
     private Session findSessionOfSpecificId(Set<Session> sessions,Long id){
-        return (Session) sessions.stream()
-                .filter(session -> session.getId() == id);
+        return sessions.stream()
+                .filter(session -> session.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new SessionException("Session does not exist!"));
     }
     protected Session saveSession(CreateSessionRequest createSessionRequest){
         Session session = new Session();
@@ -129,9 +137,6 @@ public class SessionService {
         session.setDatetime(createSessionRequest.getDatetime());
         session.setDuration(createSessionRequest.getDuration());
         return  session;
-    }
-    protected boolean isSessionExistById(Long id){
-        return sessionRepository.existsSessionById(id);
     }
 
 }
