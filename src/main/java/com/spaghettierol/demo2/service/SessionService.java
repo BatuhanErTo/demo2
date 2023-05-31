@@ -5,6 +5,7 @@ import com.spaghettierol.demo2.dto.converter.SessionDtoConverter;
 import com.spaghettierol.demo2.dto.request.CreateSessionRequest;
 import com.spaghettierol.demo2.dto.request.UpdateSessionDto;
 import com.spaghettierol.demo2.dto.response.GetSessionResponse;
+import com.spaghettierol.demo2.exception.ModuleException;
 import com.spaghettierol.demo2.exception.SessionException;
 import com.spaghettierol.demo2.model.Convener;
 import com.spaghettierol.demo2.model.Module;
@@ -116,9 +117,11 @@ public class SessionService {
                 .collect(Collectors.toSet());
     }
     private Set<Session> findSessionByModuleCodeAndConvenerId(String code, Long id){
-        moduleService.checkIfModuleExist(code);
         Convener convener = convenerService.findByConvenerId(id);
-        Module module = (Module) convener.getModules().stream().filter(module1 -> module1.getCode().equals(code));
+        Module module = convener.getModules().stream()
+                .filter(module1 -> module1.getCode().equals(code))
+                .findFirst()
+                .orElseThrow(() -> new ModuleException("Module does not exist!"));
         return module.getSessions();
     }
     private List<Session> findSessionByModuleCode(String code){
